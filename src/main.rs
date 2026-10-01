@@ -1,8 +1,9 @@
 mod app;
-mod app_state;
+mod state;
 mod db;
+mod services;
 
-use app_state::AppState;
+use state::AppState;
 
 #[tokio::main]
 async fn main() {
