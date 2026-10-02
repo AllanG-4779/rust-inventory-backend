@@ -1,30 +1,19 @@
+use crate::services::tenants::persistence::repository::TenantRepository;
+use crate::services::tenants::service::tenant_service::TenantService;
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 #[derive(Clone)]
 pub struct AppState {
     pub pg_pool: PgPool,
     pub(crate) env: EnvironmentProperties,
+    pub tenant_service: TenantService,
 }
 
 impl AppState {
-    pub async fn new() -> Self {
-        let env = EnvironmentProperties::new();
-        let db_url = format!(
-            "{}://{}:{}@{}:{}/{}",
-            env.db_driver, env.db_username, env.db_password, env.db_host, env.db_port, env.db_name
-        );
-        let connection_pool = PgPoolOptions::new()
-            .max_connections(env.db_pool_size as u32)
-            .connect(db_url.as_str())
-            .await;
-        if connection_pool.is_ok() {
-            AppState {
-                pg_pool: connection_pool.unwrap(),
-                env,
-            }
-        } else {
-            println!("Failed to connect to database {:?}", connection_pool.err());
-            panic!("Database initialization failed");
+    pub fn new(pg_pool: PgPool, env: EnvironmentProperties) -> Self {
+        Self {
+            tenant_service: TenantService::new(TenantRepository::new(pg_pool.clone())),
+            pg_pool,
+            env,
         }
     }
 }
@@ -56,7 +45,6 @@ impl EnvironmentProperties {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(3000);
-
 
         EnvironmentProperties {
             db_pool_size: db_pool_size.parse().unwrap(),

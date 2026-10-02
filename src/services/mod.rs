@@ -1,1 +1,1 @@
-mod tenants;
+pub mod tenants;

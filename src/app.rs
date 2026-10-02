@@ -1,10 +1,10 @@
+use crate::services::tenants::tenant_routes;
 use crate::state::AppState;
-use axum::{Router, routing::get};
+use axum::{Router, handler, routing::get};
 
 pub fn build(state: AppState) -> Router {
     Router::new()
-        .route("/", get(|| async { "Service startup successful" }))
-        // later: .nest("/tenants", tenants::router())
-        //        .nest("/products", products::router())
+        .route("/api/v1", get(|| async { "Service startup successful" }))
+        .nest("/api/v1/tenants", tenant_routes())
         .with_state(state)
 }
