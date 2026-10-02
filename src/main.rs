@@ -3,6 +3,7 @@ mod app;
 mod app_error;
 mod services;
 mod state;
+mod extractors;
 
 use state::AppState;
 
