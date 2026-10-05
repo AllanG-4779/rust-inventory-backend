@@ -4,6 +4,7 @@ mod app_error;
 mod services;
 mod state;
 mod extractors;
+mod dto;
 
 use state::AppState;
 

@@ -1,5 +1,6 @@
 use crate::services::tenants::persistence::model::{TaxMode, Tenant};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use validator::{Validate, ValidationError};
 #[derive(Deserialize, Serialize, Debug, Clone, Validate)]
 pub struct TenantDto {
@@ -20,6 +21,14 @@ pub struct TenantDto {
     #[validate(custom(function = "validate_timezone"))]
     pub timezone: String,
 }
+#[derive(Deserialize, Serialize, Debug, Clone, Validate)]
+pub struct FetchRequest<T> {
+    pub page: usize,
+    pub size: usize,
+    pub id: Option<T>,
+    pub criteria: Option<HashMap<String, String>>,
+}
+
 fn validate_phone(phone: &str) -> Result<(), ValidationError> {
     let digits = phone
         .strip_prefix("+254")

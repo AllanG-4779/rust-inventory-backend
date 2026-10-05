@@ -19,7 +19,7 @@ pub(crate) enum Status {
     Active,
     Suspended,
 }
-
+#[derive(sqlx::FromRow)]
 pub struct Tenant {
     pub id: Uuid,
     pub name: String,

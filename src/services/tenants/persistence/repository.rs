@@ -1,7 +1,9 @@
 use crate::app_error::AppError;
-use crate::services::tenants::dto::tenant_dto::TenantDto;
+use crate::services::tenants::dto::tenant_dto::{FetchRequest, TenantDto};
 use crate::services::tenants::persistence::model::{Status, TaxMode, Tenant};
-use sqlx::PgPool;
+use sqlx::{AssertSqlSafe, PgPool};
+use std::collections::HashMap;
+use std::iter::Filter;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -77,5 +79,36 @@ impl TenantRepository {
         .fetch_optional(&self.pg_pool)
         .await
         .map_err(|e| e.into())
+    }
+    pub async fn select(&self, filter: FetchRequest<Uuid>) -> Result<Vec<TenantDto>, AppError> {
+        let mut selector = String::from("SELECT * FROM tenant.tenants");
+        if filter.criteria.is_some() && !filter.criteria.clone().unwrap().is_empty() {
+            selector.push_str(" WHERE ");
+            for (i, (k, value)) in filter.criteria.clone().unwrap().into_iter().enumerate() {
+                if i > 0 {
+                    selector.push_str(" AND ");
+                }
+                selector.push_str(&format!(" {k} = ${}", i + 1));
+            }
+        }
+
+        selector.push_str(" LIMIT ");
+        selector.push_str(&filter.size.to_string());
+        selector.push_str(" OFFSET ");
+        selector.push_str((filter.size * filter.page).to_string().as_str());
+        println!("Generated query {}", &selector);
+
+        let mut q = sqlx::query_as::<_, Tenant>(AssertSqlSafe(selector));
+
+        for (_, v) in filter.criteria.unwrap() {
+            q = q.bind(v);
+        }
+
+        let result = q.fetch_all(&self.pg_pool).await.map_err(|t| {
+            println!("Failed to fetch tenants from database {:?}", t);
+            AppError::Conflict("Unable to select tenants.".to_string())
+        })?;
+
+        Ok(result.into_iter().map(TenantDto::from).collect())
     }
 }
