@@ -2,8 +2,6 @@ use crate::app_error::AppError;
 use crate::services::tenants::dto::tenant_dto::{FetchRequest, TenantDto};
 use crate::services::tenants::persistence::model::{Status, TaxMode, Tenant};
 use sqlx::{AssertSqlSafe, PgPool};
-use std::collections::HashMap;
-use std::iter::Filter;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -39,47 +37,6 @@ impl TenantRepository {
         Ok(t)
     }
 
-    pub async fn get_by_id(&self, id: Uuid) -> Result<Option<Tenant>, AppError> {
-        sqlx::query_as!(
-            Tenant,
-            r#"SELECT id, name, phone, kra_pin,
-                      tax_mode as "tax_mode: TaxMode", currency, timezone,
-                      status as "status: Status", created_at, updated_at
-               FROM tenant.tenants WHERE id = $1"#,
-            id
-        )
-        .fetch_optional(&self.pg_pool)
-        .await
-        .map_err(|e| e.into())
-    }
-
-    pub async fn find_by_kra(&self, kra: &str) -> Result<Option<Tenant>, AppError> {
-        sqlx::query_as!(
-            Tenant,
-            r#"SELECT id, name, phone, kra_pin,
-                      tax_mode as "tax_mode: TaxMode", currency, timezone,
-                      status as "status: Status", created_at, updated_at
-               FROM tenant.tenants WHERE kra_pin = $1"#,
-            kra
-        )
-        .fetch_optional(&self.pg_pool)
-        .await
-        .map_err(|e| e.into())
-    }
-
-    pub async fn find_by_phone(&self, phone: &str) -> Result<Option<Tenant>, AppError> {
-        sqlx::query_as!(
-            Tenant,
-            r#"SELECT id, name, phone, kra_pin,
-                      tax_mode as "tax_mode: TaxMode", currency, timezone,
-                      status as "status: Status", created_at, updated_at
-               FROM tenant.tenants WHERE phone = $1"#,
-            phone
-        )
-        .fetch_optional(&self.pg_pool)
-        .await
-        .map_err(|e| e.into())
-    }
     pub async fn select(&self, filter: FetchRequest<Uuid>) -> Result<Vec<TenantDto>, AppError> {
         let mut selector = String::from("SELECT * FROM tenant.tenants");
         if filter.criteria.is_some() && !filter.criteria.clone().unwrap().is_empty() {

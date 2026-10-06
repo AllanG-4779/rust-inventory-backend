@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UniversalResponse<T> {
     pub status: String,
+    pub message: String,
     pub data: Option<T>,
     pub timestamp: String,
     pub status_code: u16,
@@ -19,6 +20,7 @@ impl<T> UniversalResponse<T> {
             status,
             status_code,
             timestamp,
+            message: "".to_owned(),
             data: Some(data),
         }
     }
@@ -27,6 +29,7 @@ impl<T> UniversalResponse<T> {
         UniversalResponse {
             status: "00".to_string(),
             data: Some(data),
+            message: "Successfully sent data".to_string(),
             timestamp: chrono::Local::now().to_rfc3339(),
             status_code: 200,
         }

@@ -24,4 +24,6 @@ impl TenantService {
     pub async fn fetch_tenants(&self, filter: FetchRequest<Uuid>) -> Result<Vec<TenantDto>, AppError> {
                  self.tenant_repository.select(filter).await
     }
+
+
 }

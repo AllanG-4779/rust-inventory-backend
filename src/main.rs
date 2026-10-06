@@ -5,6 +5,7 @@ mod services;
 mod state;
 mod extractors;
 mod dto;
+mod db_commons;
 
 use state::AppState;
 
